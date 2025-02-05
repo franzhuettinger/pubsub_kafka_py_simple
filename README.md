@@ -2,6 +2,8 @@
 
 This repository provides a minimal setup for an Apache Kafka cluster using Docker Compose. It spins up three Kafka brokers orchestrated by ZooKeeper, along with [Kouncil](https://kouncil.io) as a web interface. You will also find simple Python examples for a producer and a consumer, both using the `confluent-kafka` library. A [`uv`](https://pypi.org/project/uv/) virtual environment is used to manage Python dependencies.
 
+![System Diagram](kafka_overview.png)
+
 ## Table of Contents
 
 - [Apache Kafka Cluster with Docker Compose and Python](#apache-kafka-cluster-with-docker-compose-and-python)
