@@ -1,0 +1,94 @@
+version: "3"
+
+services:
+  # Zookeeper orchestrates Kafka brokers
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka-net
+
+  # Kafka broker 1
+  kafka1:
+    image: wurstmeister/kafka
+    container_name: kafka1
+    ports:
+      - "9092:9092"   # External access via the EXTERNAL Listener
+    expose:
+      - "9093"        # INTERNAL Listener (only in the Docker network)
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      # Two listeners: EXTERNAL for external clients, INTERNAL for internal communication
+      - KAFKA_LISTENERS=EXTERNAL://0.0.0.0:9092,INTERNAL://0.0.0.0:9093
+      # Advertised Listener: EXTERNAL as ‘localhost’ (accessible from host) and INTERNAL as container name
+      - KAFKA_ADVERTISED_LISTENERS=EXTERNAL://localhost:9092,INTERNAL://kafka1:9093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      # The INTERNAL Listener is used for broker communication.
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=2
+    networks:
+      - kafka-net
+
+  # Kafka broker 2
+  kafka2:
+    image: wurstmeister/kafka
+    container_name: kafka2
+    ports:
+      - "9093:9092"   # External access: host port 9093 to container port 9092 (EXTERNAL Listener)
+    expose:
+      - "9093"        # INTERNAL Listener-Port
+    environment:
+      - KAFKA_BROKER_ID=2
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=EXTERNAL://0.0.0.0:9092,INTERNAL://0.0.0.0:9093
+      - KAFKA_ADVERTISED_LISTENERS=EXTERNAL://localhost:9093,INTERNAL://kafka2:9093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=2
+    networks:
+      - kafka-net
+
+  # Kafka Broker 3
+  kafka3:
+    image: wurstmeister/kafka
+    container_name: kafka3
+    ports:
+      - "9094:9092"   # External access: host port 9094 to container port 9092 (EXTERNAL Listener)
+    expose:
+      - "9093"
+    environment:
+      - KAFKA_BROKER_ID=3
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=EXTERNAL://0.0.0.0:9092,INTERNAL://0.0.0.0:9093
+      - KAFKA_ADVERTISED_LISTENERS=EXTERNAL://localhost:9094,INTERNAL://kafka3:9093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=2
+    networks:
+      - kafka-net
+
+  # Web interface for Kafka
+  kouncil:
+    image: consdata/kouncil:latest
+    container_name: kouncil
+    ports:
+      - "8888:8080"  # Kouncil web interface via port 8888 (internal 8080)
+    environment:
+      - bootstrapServers=kafka1:9093,kafka2:9093,kafka3:9093
+      - KAFKA_BROKERS=kafka1:9093,kafka2:9093,kafka3:9093
+      - kouncil.auth.active-provider=inmemory
+    networks:
+      - kafka-net
+
+networks:
+  kafka-net:
+    driver: bridge

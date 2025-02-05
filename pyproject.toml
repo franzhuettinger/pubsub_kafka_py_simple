@@ -1,0 +1,9 @@
+[project]
+name = "streaming-data"
+version = "0.1.0"
+description = "Simple Apache Kafka producer and consumer demo"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "confluent-kafka>=2.8.0"
+]
