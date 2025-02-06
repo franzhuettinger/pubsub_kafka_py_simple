@@ -1,6 +1,6 @@
 # Apache Kafka Cluster with Docker Compose and Python
 
-This repository provides a minimal setup for an Apache Kafka cluster using Docker Compose. It spins up three Kafka brokers orchestrated by ZooKeeper, along with [Kouncil](https://kouncil.io) as a web interface. You will also find simple Python examples for a producer and a consumer, both using the `confluent-kafka` library. A [`uv`](https://pypi.org/project/uv/) virtual environment is used to manage Python dependencies.
+This repository provides a minimal setup for an Apache Kafka cluster using Docker Compose. It spins up three Kafka brokers orchestrated by Apache Kafka Raft, along with [Kouncil](https://kouncil.io) as a web interface. You will also find simple Python examples for a producer and a consumer, both using the `confluent-kafka` library. A [`uv`](https://pypi.org/project/uv/) virtual environment is used to manage Python dependencies.
 
 ![System Diagram](kafka_overview.png)
 
@@ -37,13 +37,14 @@ docker-compose -f kafka_cluster.yml up -d
 
 This command will:
 
-- Spin up a ZooKeeper instance.
 - Spin up three Kafka brokers (`kafka1`, `kafka2`, `kafka3`).
 - Launch the Kouncil container as a web interface for observing and managing Kafka.
 
 ### 2. Accessing Kouncil
 
 After the cluster has started, you can open [http://localhost:8888](http://localhost:8888) to view the Kouncil dashboard. Here, you can explore the cluster and manage topics visually.
+
+> When you start Kouncil for the first time, you can log in with the username and password `admin`. Kouncil will ask you for a new administrator password.
 
 ### 3. Setting Up the Python Environment
 
